@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DebugConsole", "DebugConsol
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MathLib", "MathLib\MathLib.vcxproj", "{189CBB8F-FB83-4120-A10D-C3023F6E3A7C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Window", "Window\Window.vcxproj", "{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{189CBB8F-FB83-4120-A10D-C3023F6E3A7C}.Release|x64.Build.0 = Release|x64
 		{189CBB8F-FB83-4120-A10D-C3023F6E3A7C}.Release|x86.ActiveCfg = Release|Win32
 		{189CBB8F-FB83-4120-A10D-C3023F6E3A7C}.Release|x86.Build.0 = Release|Win32
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Debug|x64.ActiveCfg = Debug|x64
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Debug|x64.Build.0 = Debug|x64
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Debug|x86.ActiveCfg = Debug|Win32
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Debug|x86.Build.0 = Debug|Win32
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Release|x64.ActiveCfg = Release|x64
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Release|x64.Build.0 = Release|x64
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Release|x86.ActiveCfg = Release|Win32
+		{1D87ABCE-3D3E-42E5-8DEC-67ACBE28B060}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

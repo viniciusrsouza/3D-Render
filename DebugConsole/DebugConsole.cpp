@@ -2,22 +2,20 @@
 //
 
 #include <iostream>
-#include <Vector3D.h>
+#include <Vector2D.h>
 
 using namespace MathLib;
 
 int main()
 {
     std::string str;
-    int x, y, z;
+    int x, y;
     std::cout << "Inicialize o vetor." << std::endl << "x> ";
     std::cin >> x;
     std::cout << "y> ";
     std::cin >> y;
-    std::cout << "z> ";
-    std::cin >> z;
 
-    Vector3D vector(x, y, z);
+    Vector2D vector(x, y);
 
     std::cout << "Vetor> " << vector.str() << std::endl;
 
