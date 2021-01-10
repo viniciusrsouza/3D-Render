@@ -3,14 +3,14 @@
 #include <tchar.h>
 #include <io.h>
 #include <iostream>
-#include <thread>
-#include <fstream>
-#include <Vector2D.h>
 #include <fcntl.h>
 #include <fstream>
 #include "ConsoleBinder.h"
+#include "FileLoader.h"
 
 #define MAX_CONSOLE_LINES 500
+
+const int WIDTH = 640, HEIGHT = 480;
 
 int CALLBACK WinMain(
 	_In_ HINSTANCE		hInstance,
@@ -78,7 +78,7 @@ int CALLBACK WinMain(HINSTANCE hInstance,
 		szTitle,
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT,
-		1280, 720,
+		WIDTH, HEIGHT,
 		NULL,
 		NULL,
 		hInstance,
@@ -132,15 +132,16 @@ LRESULT CALLBACK WndProc(HWND hWnd,
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		Paint(hdc, color);
+		//Paint(hdc, color);
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
 	case WM_LBUTTONUP:
+		LoadFile("../input/piramide.byu", nullptr);
 		color = (color == 0x0000FF) ? 0x000000 : color + 0x000011;
-		InvalidateRect(hWnd, NULL, FALSE);
+		//InvalidateRect(hWnd, NULL, FALSE);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -151,13 +152,12 @@ LRESULT CALLBACK WndProc(HWND hWnd,
 }
 
 static void Paint(HDC hdc, COLORREF color) {
-	int width = 1280, height = 720;
-	int x_start = 0, x_end = 1280, y_start = 0, y_end = 720;
+	int x_start = 0, x_end = WIDTH, y_start = 0, y_end = HEIGHT;
 
 	// loads screen buffer to prevent an absurd amount of
 	// requests to gpu
 	HDC memDC = CreateCompatibleDC(hdc);
-	HBITMAP memBM = CreateCompatibleBitmap(hdc, width, height);
+	HBITMAP memBM = CreateCompatibleBitmap(hdc, WIDTH, HEIGHT);
 	SelectObject(memDC, memBM);
 
 	// draw on buffer
@@ -165,11 +165,11 @@ static void Paint(HDC hdc, COLORREF color) {
 		for (int y = y_start; y < y_end; y++) {
 			SetPixel(memDC, x, y, color);
 		}
-		PrintProgress(x + 1, x_end);
+		//PrintProgress(x + 1, x_end);
 	}
 
 	// load buffer to actual screen
-	BitBlt(hdc, 0, 0, width, height, memDC, 0, 0, SRCCOPY);
+	BitBlt(hdc, 0, 0, WIDTH, HEIGHT, memDC, 0, 0, SRCCOPY);
 	std::cout << "Drawing complete" << std::endl;
 }
 
