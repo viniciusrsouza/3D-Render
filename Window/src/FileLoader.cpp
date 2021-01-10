@@ -3,19 +3,18 @@
 #include <fstream>
 #include <string>
 #include "FileLoader.h"
+#include "camera/Camera.h"
 #include <Vector3D.h>
 
 #define LOG true
 
-#ifdef _DEBUG
-
-void LoadFile(std::string filename, void* callback) {
+void LoadFile(std::string filename, void(*callback)(int, MathLib::Vector3D*, int, int**, Camera)) {
 	std::cout << "Loading: " << filename << std::endl;
 	std::thread thread(_LoadFileAsync, filename, callback);
 	thread.detach();
 }
 
-void _LoadFileAsync(std::string filename, void* callback) {
+void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D*, int, int**, Camera)) {
 	std::ifstream file(filename);
 	int vertex_count, triangle_count;
 
@@ -24,7 +23,7 @@ void _LoadFileAsync(std::string filename, void* callback) {
 	// carregando vertices
 	MathLib::Vector3D* list_of_vertex = new MathLib::Vector3D[vertex_count];
 
-	double x, y, z;
+	float x, y, z;
 	for (int i = 0; i < vertex_count; i++) {
 		file >> x >> y >> z;
 		list_of_vertex[i] = MathLib::Vector3D(x, y, z);
@@ -49,10 +48,28 @@ void _LoadFileAsync(std::string filename, void* callback) {
 		std::cout << i << ": " << triangle[0] << " " << triangle[1] << " " << triangle[2] << std::endl;
 		#endif
 	}
+	file.close();
+	
+	file = std::ifstream("../input/camera.in");
+	// carregando camera
+	Camera c;
+	file >> x >> y >> z;
+	c.N = MathLib::Vector3D(x, y, z);
 
+	file >> x >> y >> z;
+	c.V = MathLib::Vector3D(x, y, z);
 
+	file
+		>> c.d
+		>> c.hx
+		>> c.hy;
+
+	file >> x >> y >> z;
+	c.C = MathLib::Vector3D(x, y, z);
+
+	std::cout << c.str() << std::endl;
 
 	std::cout << "Finished file loading" << std::endl;
-}
 
-#endif
+	callback(vertex_count, list_of_vertex, triangle_count, triangles, c);
+}

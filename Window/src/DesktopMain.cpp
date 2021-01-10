@@ -7,6 +7,9 @@
 #include <fstream>
 #include "ConsoleBinder.h"
 #include "FileLoader.h"
+#include <Vector3D.h>
+#include <Transform.h>
+#include "camera/Camera.h"
 
 #define MAX_CONSOLE_LINES 500
 
@@ -28,6 +31,7 @@ LRESULT CALLBACK WndProc(
 
 static void Paint(HDC, COLORREF);
 static void PrintProgress(float, float);
+static void ReceiveInputData(int, MathLib::Vector3D*, int, int**, Camera);
 
 static TCHAR szWindowClass[] = _T("DesktopApp");
 static TCHAR szTitle[] = _T("Windows Desktop Guided Tour Application");
@@ -139,7 +143,7 @@ LRESULT CALLBACK WndProc(HWND hWnd,
 		PostQuitMessage(0);
 		break;
 	case WM_LBUTTONUP:
-		LoadFile("../input/piramide.byu", nullptr);
+		LoadFile("../input/piramide.byu", ReceiveInputData);
 		color = (color == 0x0000FF) ? 0x000000 : color + 0x000011;
 		//InvalidateRect(hWnd, NULL, FALSE);
 		break;
@@ -190,3 +194,24 @@ static void PrintProgress(float progress, float total) {
 	if (progress == 1.0) std::cout << std::endl;
 }
 
+static void LoadCamera(Camera camera) {
+	camera.V = camera.V - MathLib::project(camera.V, camera.N);
+	camera.U = camera.N.cross(camera.V);
+
+	camera.V = camera.V.normalize();
+	camera.U = camera.U.normalize();
+	camera.N = camera.N.normalize();
+
+	std::cout << camera.str() << std::endl;
+}
+
+static void ReceiveInputData(
+	int vertex_count,
+	MathLib::Vector3D* vertex_list,
+	int triangle_count,
+	int** triangle_list,
+	Camera c
+) {
+	LoadCamera(c);
+
+}
