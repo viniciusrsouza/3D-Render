@@ -194,7 +194,7 @@ static void PrintProgress(float progress, float total) {
 	if (progress == 1.0) std::cout << std::endl;
 }
 
-static void LoadCamera(Camera camera) {
+static Camera LoadCamera(Camera camera) {
 	camera.V = camera.V - MathLib::project(camera.V, camera.N);
 	camera.U = camera.N.cross(camera.V);
 
@@ -203,6 +203,8 @@ static void LoadCamera(Camera camera) {
 	camera.N = camera.N.normalize();
 
 	std::cout << camera.str() << std::endl;
+
+	return camera;
 }
 
 static void ReceiveInputData(
@@ -212,6 +214,21 @@ static void ReceiveInputData(
 	int** triangle_list,
 	Camera c
 ) {
-	LoadCamera(c);
+	c = LoadCamera(c);
+	float** camera_matrix = c.getChangeBasisMatrix();
 
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++)
+			std::cout << camera_matrix[i][j] << " ";
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+
+	// mudar vetores para base da camera
+	for (int i = 0; i < vertex_count; i++) {
+		std::cout << i << ": " << vertex_list[i].str() << std::endl;
+		vertex_list[i] = vertex_list[i].multiply_matrix(camera_matrix);
+		std::cout << i << ": " << vertex_list[i].str() << std::endl;
+		std::cout << std::endl;
+	}
 }

@@ -4,6 +4,14 @@
 
 Camera::Camera(): hx(0), hy(0), d(0) {}
 
+float** Camera::getChangeBasisMatrix() {
+	float** x = new float* [3];
+	x[0] = new float[3]{ U.x, V.x, N.x };
+	x[1] = new float[3]{ U.y, V.y, N.y };
+	x[2] = new float[3]{ U.z, V.z, N.z };
+	return x;
+}
+
 std::string Camera::str() const {
 	std::stringstream sstm;
 	sstm <<
