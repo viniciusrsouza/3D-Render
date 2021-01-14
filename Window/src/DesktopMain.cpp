@@ -15,6 +15,12 @@
 
 const int WIDTH = 640, HEIGHT = 480;
 
+int vertex_count;
+int triangle_count;
+MathLib::Vector3D* vertex_list;
+int** triangle_list;
+Camera camera;
+
 int CALLBACK WinMain(
 	_In_ HINSTANCE		hInstance,
 	_In_opt_ HINSTANCE	hPrevInstance,
@@ -207,15 +213,37 @@ static Camera LoadCamera(Camera camera) {
 	return camera;
 }
 
+static bool isBetween(MathLib::Vector3D a, MathLib::Vector3D b, MathLib::Vector3D c) {
+	return a.y >= c.y >= b.y || b.y >= c.y >= a.y;
+}
+
+static void Render(HDC hdc, COLORREF color) {
+	for (int i = 0; i < HEIGHT; i++) {
+		for (int i = 0; i < triangle_count; i++) {
+
+		}
+
+		for (int j = 0; j < WIDTH; j++) {
+			SetPixel(hdc, i, j, 0x000000);
+		}
+	}
+}
+
 static void ReceiveInputData(
-	int vertex_count,
-	MathLib::Vector3D* vertex_list,
-	int triangle_count,
-	int** triangle_list,
-	Camera c
+	int _vc,
+	MathLib::Vector3D* _vl,
+	int _tc,
+	int** _tl,
+	Camera _c
 ) {
-	c = LoadCamera(c);
-	float** camera_matrix = c.getChangeBasisMatrix();
+	vertex_count = _vc;
+	vertex_list = _vl;
+	triangle_count = _tc;
+	triangle_list = _tl;
+	camera = _c;
+
+	camera = LoadCamera(camera);
+	float** camera_matrix = camera.getChangeBasisMatrix();
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++)
@@ -224,11 +252,22 @@ static void ReceiveInputData(
 	}
 	std::cout << std::endl;
 
-	// mudar vetores para base da camera
+	// mudar vetores para coordenadas de tela.
 	for (int i = 0; i < vertex_count; i++) {
 		std::cout << i << ": " << vertex_list[i].str() << std::endl;
-		vertex_list[i] = vertex_list[i].multiply_matrix(camera_matrix);
+		
+		MathLib::Vector3D v = (vertex_list[i] - camera.C).multiply_matrix(camera_matrix);
+		v.x = (camera.d / camera.hx) * (v.x / v.z);
+		v.y = (camera.d / camera.hy) * (v.y / v.z);
+
+		v.x = (int) ((((v.x + 1)/2) * WIDTH) + .5);
+		v.y = (int) ((HEIGHT - ((v.y + 1) / 2) * HEIGHT) + .5);
+
+		vertex_list[i] = v;
+
 		std::cout << i << ": " << vertex_list[i].str() << std::endl;
 		std::cout << std::endl;
 	}
+
+
 }

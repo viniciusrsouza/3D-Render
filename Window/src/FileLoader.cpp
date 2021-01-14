@@ -14,6 +14,24 @@ void LoadFile(std::string filename, void(*callback)(int, MathLib::Vector3D*, int
 	thread.detach();
 }
 
+void swap(int* arr, int i, int j) {
+	int aux = arr[i];
+	arr[i] = arr[j];
+	arr[j] = aux;
+}
+
+void sort(MathLib::Vector3D* vertex, int i, int j, int k, int* triangle) {
+	if (vertex[triangle[2]].y > vertex[triangle[1]].y) {
+		swap(triangle, 2, 1);
+	}
+	if (vertex[triangle[1]].y > vertex[triangle[0]].y) {
+		swap(triangle, 1, 0);
+	}
+	if (vertex[triangle[2]].y > vertex[triangle[1]].y) {
+		swap(triangle, 2, 1);
+	}
+}
+
 void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D*, int, int**, Camera)) {
 	std::ifstream file(filename);
 	int vertex_count, triangle_count;
@@ -42,6 +60,7 @@ void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D
 		triangle[0]--;
 		triangle[1]--;
 		triangle[2]--;
+		sort(list_of_vertex, triangle[0], triangle[1], triangle[2], triangle);
 		triangles[i] = triangle;
 
 		#if LOG
