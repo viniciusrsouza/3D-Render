@@ -6,9 +6,9 @@ Camera::Camera(): hx(0), hy(0), d(0) {}
 
 float** Camera::getChangeBasisMatrix() {
 	float** x = new float* [3];
-	x[0] = new float[3]{ U.x, V.x, N.x };
-	x[1] = new float[3]{ U.y, V.y, N.y };
-	x[2] = new float[3]{ U.z, V.z, N.z };
+	x[0] = new float[3]{ U.x, U.y, U.z };
+	x[1] = new float[3]{ V.x, V.y, V.z };
+	x[2] = new float[3]{ N.x, N.y, N.z };
 	return x;
 }
 

@@ -13,7 +13,7 @@
 
 #define MAX_CONSOLE_LINES 500
 
-const int WIDTH = 640, HEIGHT = 480;
+const int WIDTH = 600, HEIGHT = 600;
 
 int vertex_count;
 int triangle_count;
@@ -74,16 +74,6 @@ int CALLBACK WinMain(HINSTANCE hInstance,
 		return 1;
 	}
 
-	// The parameters to CreateWindow explained:
-	// szWindowClass: the name of the application
-	// szTitle: the text that appears in the title bar
-	// WS_OVERLAPPEDWINDOW: the type of window to create
-	// CW_USEDEFAULT, CW_USEDEFAULT: initial position (x, y)
-	// 500, 100: initial size (width, length)
-	// NULL: the parent of this window
-	// NULL: this application does not have a menu bar
-	// hInstance: the first parameter from WinMain
-	// NULL: not used in this application
 	HWND hWnd = CreateWindow(
 		szWindowClass,
 		szTitle,
@@ -106,17 +96,10 @@ int CALLBACK WinMain(HINSTANCE hInstance,
 	}
 
 	RedirectIOToConsole();
-
-	// _open_osfhandle();
-
-	// The parameters to ShowWindow explained:
-	// hWnd: the value returned from CreateWindow
-	// nCmdShow: the fourth parameter from WinMain
 	ShowWindow(hWnd,
 		nCmdShow);
 	UpdateWindow(hWnd);
 
-	// Main message loop:
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
@@ -166,15 +149,15 @@ static void Paint(HDC hdc, COLORREF color) {
 	std::cout << "Drawing started" << std::endl;
 	int x_start = 0, x_end = WIDTH, y_start = 0, y_end = HEIGHT;
 
-	// loads screen buffer to prevent an absurd amount of
-	// requests to gpu
+	// carrega buffer de tela para evitar uma quantidade absurda
+	// de requisições à GPU
 	HDC memDC = CreateCompatibleDC(hdc);
 	HBITMAP memBM = CreateCompatibleBitmap(hdc, WIDTH, HEIGHT);
 	SelectObject(memDC, memBM);
 
 	Render(memDC, color);
 
-	// load buffer to actual screen
+	// passa o buffer para a tela
 	BitBlt(hdc, 0, 0, WIDTH, HEIGHT, memDC, 0, 0, SRCCOPY);
 	std::cout << "Drawing complete" << std::endl;
 }
@@ -225,39 +208,37 @@ static void PaintUpperTriangle(HDC hdc, COLORREF color, MathLib::Vector3D a, Mat
 	}
 
 	int x_min = a.x, x_max = a.x;
-	int y = a.y;
+	
 
-	while (y < b.y) {
+	for (int y = a.y; y < b.y; y++) {
 		for (int i = x_min; i <= x_max; i++) {
 			SetPixel(hdc, i, y, color);
 		}
 		x_min += a_min;
 		x_max += a_max;
-		y++;
 	}
 }
 
 static void PaintBottomTriangle(HDC hdc, COLORREF color, MathLib::Vector3D a, MathLib::Vector3D b, MathLib::Vector3D c) {
 	float a_min, a_max;
+
 	if (b.x < c.x) {
-		a_min = (c.x - a.x) / (c.y - a.y);
-		a_max = (c.x - b.x) / (c.y - b.y);
+		a_max = (c.x - a.x) / (c.y - a.y);
+		a_min = (c.x - b.x) / (c.y - b.y);
 	}
 	else {
-		a_min = (c.x - b.x) / (c.y - b.y);
-		a_max = (c.x - a.x) / (c.y - a.y);
+		a_max = (c.x - b.x) / (c.y - b.y);
+		a_min= (c.x - a.x) / (c.y - a.y);
 	}
 
 	int x_min = c.x, x_max = c.x;
-	int y = c.y;
 
-	while (y > b.y) {
+	for (int y = c.y; y >= b.y; y--) {
 		for (int i = x_min; i <= x_max; i++) {
 			SetPixel(hdc, i, y, color);
 		}
 		x_min -= a_min;
 		x_max -= a_max;
-		y--;
 	}
 }
 
@@ -325,29 +306,20 @@ static void ReceiveInputData(
 
 	camera = LoadCamera(camera);
 	float** camera_matrix = camera.getChangeBasisMatrix();
-	camera_matrix = MathLib::transpose_3x3(camera_matrix);
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++)
-			std::cout << camera_matrix[i][j] << " ";
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
+	float** cm = camera_matrix;
 
 	// mudar vetores para coordenadas de tela.
 	for (int i = 0; i < vertex_count; i++) {
-		std::cout << i << ": " << vertex_list[i].str() << std::endl;
-		
 		MathLib::Vector3D v = (vertex_list[i] - camera.C).multiply_matrix(camera_matrix);
-		v.x = (camera.d / camera.hx) * (v.x / v.z);
-		v.y = (camera.d / camera.hy) * (v.y / v.z);
+		v.x = camera.d * (v.x / v.z);
+		v.y = camera.d * (v.y / v.z);
 
-		v.x = ((((v.x + 1)/2) * WIDTH) + .5);
-		v.y = (int) ((HEIGHT - ((v.y + 1) / 2) * HEIGHT) + .5);
+		v.x = v.x / camera.hx;
+		v.y = v.y / camera.hy;
+
+		v.x = (((v.x + 1)/2) * WIDTH) + .5;
+		v.y = (HEIGHT - ((v.y + 1) / 2) * HEIGHT) + .5;
 
 		vertex_list[i] = v;
-
-		std::cout << i << ": " << vertex_list[i].str() << std::endl;
-		std::cout << std::endl;
 	}
 }

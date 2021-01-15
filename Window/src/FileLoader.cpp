@@ -6,8 +6,6 @@
 #include "camera/Camera.h"
 #include <Vector3D.h>
 
-#define LOG false
-
 void LoadFile(std::string filename, void(*callback)(int, MathLib::Vector3D*, int, int**, Camera)) {
 	std::cout << "Loading: " << filename << std::endl;
 	_LoadFileAsync(filename, callback);
@@ -30,10 +28,6 @@ void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D
 	for (int i = 0; i < vertex_count; i++) {
 		file >> x >> y >> z;
 		list_of_vertex[i] = MathLib::Vector3D(x, y, z);
-
-		#if LOG
-		std::cout << i << ": " << list_of_vertex[i].str() <<std::endl;
-		#endif
 	}
 
 	// carregando triangulos
@@ -46,10 +40,6 @@ void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D
 		triangle[1]--;
 		triangle[2]--;
 		triangles[i] = triangle;
-
-		#if LOG
-		std::cout << i << ": " << triangle[0] << " " << triangle[1] << " " << triangle[2] << std::endl;
-		#endif
 	}
 	file.close();
 	
