@@ -6,30 +6,13 @@
 #include "camera/Camera.h"
 #include <Vector3D.h>
 
-#define LOG true
+#define LOG false
 
 void LoadFile(std::string filename, void(*callback)(int, MathLib::Vector3D*, int, int**, Camera)) {
 	std::cout << "Loading: " << filename << std::endl;
-	std::thread thread(_LoadFileAsync, filename, callback);
-	thread.detach();
-}
-
-void swap(int* arr, int i, int j) {
-	int aux = arr[i];
-	arr[i] = arr[j];
-	arr[j] = aux;
-}
-
-void sort(MathLib::Vector3D* vertex, int i, int j, int k, int* triangle) {
-	if (vertex[triangle[2]].y > vertex[triangle[1]].y) {
-		swap(triangle, 2, 1);
-	}
-	if (vertex[triangle[1]].y > vertex[triangle[0]].y) {
-		swap(triangle, 1, 0);
-	}
-	if (vertex[triangle[2]].y > vertex[triangle[1]].y) {
-		swap(triangle, 2, 1);
-	}
+	_LoadFileAsync(filename, callback);
+	//std::thread thread(_LoadFileAsync, filename, callback);
+	//thread.join();
 }
 
 void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D*, int, int**, Camera)) {
@@ -37,6 +20,8 @@ void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D
 	int vertex_count, triangle_count;
 
 	file >> vertex_count >> triangle_count;
+
+	std::cout << vertex_count << " " << triangle_count << std::endl;
 
 	// carregando vertices
 	MathLib::Vector3D* list_of_vertex = new MathLib::Vector3D[vertex_count];
@@ -60,7 +45,6 @@ void _LoadFileAsync(std::string filename, void(*callback)(int, MathLib::Vector3D
 		triangle[0]--;
 		triangle[1]--;
 		triangle[2]--;
-		sort(list_of_vertex, triangle[0], triangle[1], triangle[2], triangle);
 		triangles[i] = triangle;
 
 		#if LOG

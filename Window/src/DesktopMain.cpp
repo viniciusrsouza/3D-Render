@@ -35,6 +35,7 @@ LRESULT CALLBACK WndProc(
 	_In_ LPARAM lParam
 );
 
+static void Render(HDC, COLORREF);
 static void Paint(HDC, COLORREF);
 static void PrintProgress(float, float);
 static void ReceiveInputData(int, MathLib::Vector3D*, int, int**, Camera);
@@ -142,16 +143,16 @@ LRESULT CALLBACK WndProc(HWND hWnd,
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		//Paint(hdc, color);
+		Paint(hdc, 0xffffff);
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
 	case WM_LBUTTONUP:
-		LoadFile("../input/piramide.byu", ReceiveInputData);
+		LoadFile("../input/vaso.byu", ReceiveInputData);
 		color = (color == 0x0000FF) ? 0x000000 : color + 0x000011;
-		//InvalidateRect(hWnd, NULL, FALSE);
+		InvalidateRect(hWnd, NULL, FALSE);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -162,6 +163,7 @@ LRESULT CALLBACK WndProc(HWND hWnd,
 }
 
 static void Paint(HDC hdc, COLORREF color) {
+	std::cout << "Drawing started" << std::endl;
 	int x_start = 0, x_end = WIDTH, y_start = 0, y_end = HEIGHT;
 
 	// loads screen buffer to prevent an absurd amount of
@@ -170,13 +172,7 @@ static void Paint(HDC hdc, COLORREF color) {
 	HBITMAP memBM = CreateCompatibleBitmap(hdc, WIDTH, HEIGHT);
 	SelectObject(memDC, memBM);
 
-	// draw on buffer
-	for (int x = x_start; x < x_end; x++) {
-		for (int y = y_start; y < y_end; y++) {
-			SetPixel(memDC, x, y, color);
-		}
-		//PrintProgress(x + 1, x_end);
-	}
+	Render(memDC, color);
 
 	// load buffer to actual screen
 	BitBlt(hdc, 0, 0, WIDTH, HEIGHT, memDC, 0, 0, SRCCOPY);
@@ -217,15 +213,100 @@ static bool isBetween(MathLib::Vector3D a, MathLib::Vector3D b, MathLib::Vector3
 	return a.y >= c.y >= b.y || b.y >= c.y >= a.y;
 }
 
+static void PaintUpperTriangle(HDC hdc, COLORREF color, MathLib::Vector3D a, MathLib::Vector3D b, MathLib::Vector3D c) {
+	float a_min, a_max;
+	if (b.x < c.x) {
+		a_min = (b.x - a.x) / (b.y - a.y);
+		a_max = (c.x - a.x) / (c.y - a.y);
+	}
+	else {
+		a_min = (c.x - a.x) / (c.y - a.y);
+		a_max = (b.x - a.x) / (b.y - a.y);
+	}
+
+	int x_min = a.x, x_max = a.x;
+	int y = a.y;
+
+	while (y < b.y) {
+		for (int i = x_min; i <= x_max; i++) {
+			SetPixel(hdc, i, y, color);
+		}
+		x_min += a_min;
+		x_max += a_max;
+		y++;
+	}
+}
+
+static void PaintBottomTriangle(HDC hdc, COLORREF color, MathLib::Vector3D a, MathLib::Vector3D b, MathLib::Vector3D c) {
+	float a_min, a_max;
+	if (b.x < c.x) {
+		a_min = (c.x - a.x) / (c.y - a.y);
+		a_max = (c.x - b.x) / (c.y - b.y);
+	}
+	else {
+		a_min = (c.x - b.x) / (c.y - b.y);
+		a_max = (c.x - a.x) / (c.y - a.y);
+	}
+
+	int x_min = c.x, x_max = c.x;
+	int y = c.y;
+
+	while (y > b.y) {
+		for (int i = x_min; i <= x_max; i++) {
+			SetPixel(hdc, i, y, color);
+		}
+		x_min -= a_min;
+		x_max -= a_max;
+		y--;
+	}
+}
+
+void swap(int* arr, int i, int j) {
+	int aux = arr[i];
+	arr[i] = arr[j];
+	arr[j] = aux;
+}
+
+void sort(MathLib::Vector3D* vertex, int i, int j, int k, int* triangle) {
+	if (vertex[triangle[0]].y > vertex[triangle[1]].y) {
+		swap(triangle, 0, 1);
+	}
+	if (vertex[triangle[1]].y > vertex[triangle[2]].y) {
+		swap(triangle, 1, 2);
+	}
+	if (vertex[triangle[0]].y > vertex[triangle[1]].y) {
+		swap(triangle, 0, 1);
+	}
+}
+
+static void PaintTriangle(HDC hdc, COLORREF color, int* index) {
+	sort(vertex_list, index[0], index[1], index[2], index);
+
+	MathLib::Vector3D a = vertex_list[index[0]];
+	MathLib::Vector3D b = vertex_list[index[1]];
+	MathLib::Vector3D c = vertex_list[index[2]];
+
+	if (b.y == c.y) {
+		PaintUpperTriangle(hdc, color, a, b, c);
+	}
+	else if (a.y == b.y) {
+		PaintBottomTriangle(hdc, color, a, b, c);
+	}
+	else {
+		PaintUpperTriangle(hdc, color, a, b, c);
+		PaintBottomTriangle(hdc, color, a, b, c);
+	}
+}
+
 static void Render(HDC hdc, COLORREF color) {
 	for (int i = 0; i < HEIGHT; i++) {
-		for (int i = 0; i < triangle_count; i++) {
-
-		}
-
 		for (int j = 0; j < WIDTH; j++) {
 			SetPixel(hdc, i, j, 0x000000);
 		}
+	}
+
+	for (int i = 0; i < triangle_count; i++) {
+		PaintTriangle(hdc, color, triangle_list[i]);
 	}
 }
 
@@ -244,6 +325,7 @@ static void ReceiveInputData(
 
 	camera = LoadCamera(camera);
 	float** camera_matrix = camera.getChangeBasisMatrix();
+	camera_matrix = MathLib::transpose_3x3(camera_matrix);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++)
@@ -260,7 +342,7 @@ static void ReceiveInputData(
 		v.x = (camera.d / camera.hx) * (v.x / v.z);
 		v.y = (camera.d / camera.hy) * (v.y / v.z);
 
-		v.x = (int) ((((v.x + 1)/2) * WIDTH) + .5);
+		v.x = ((((v.x + 1)/2) * WIDTH) + .5);
 		v.y = (int) ((HEIGHT - ((v.y + 1) / 2) * HEIGHT) + .5);
 
 		vertex_list[i] = v;
@@ -268,6 +350,4 @@ static void ReceiveInputData(
 		std::cout << i << ": " << vertex_list[i].str() << std::endl;
 		std::cout << std::endl;
 	}
-
-
 }
